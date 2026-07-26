@@ -4,175 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sage 50 Remittance Converter</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SheetJS Library -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: #ffffff;
-            width: 100%;
-            max-width: 520px;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        .badge {
-            background: #e0e7ff;
-            color: #3730a3;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-
-        h2 {
-            color: #0f172a;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        p.subtitle {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 28px;
-            line-height: 1.5;
-        }
-
-        .upload-box {
-            border: 2px dashed #cbd5e1;
-            background: #f8fafc;
-            padding: 30px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 24px;
-            position: relative;
-        }
-
-        .upload-box:hover {
-            border-color: #2563eb;
-            background: #eff6ff;
-        }
-
-        .upload-icon {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 12px;
-            fill: #3b82f6;
-        }
-
-        .file-label {
-            display: block;
-            color: #334155;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-        }
-
-        .file-sub {
-            color: #94a3b8;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        input[type="file"] {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .btn {
-            background: #2563eb;
-            color: #ffffff;
-            border: none;
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover {
-            background: #1d4ed8;
-            box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        #status {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            display: none;
-        }
-
-        .status-success {
-            background: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-            display: block !important;
-        }
-
-        .file-info {
-            margin-top: 8px;
-            font-size: 13px;
-            color: #2563eb;
-            font-weight: 600;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: #0f172a; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: #ffffff; width: 100%; max-width: 500px; padding: 35px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        h2 { color: #0f172a; margin-bottom: 8px; font-size: 22px; }
+        p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
+        
+        .file-input-wrapper { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-weight: 600; color: #334155; margin-bottom: 8px; font-size: 14px; }
+        input[type="file"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; background: #f8fafc; font-size: 14px; cursor: pointer; }
+        
+        .btn { background: #2563eb; color: #ffffff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: #1d4ed8; }
+        
+        #status { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; display: none; }
+        .success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; display: block !important; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; display: block !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <span class="badge">Sage 50 Automation</span>
-    <h2>Remittance Converter</h2>
-    <p class="subtitle">Upload Excel file to auto-generate Audit Trail CSV with SR & SA Split</p>
+    <h2>Sage 50 Remittance Converter</h2>
+    <p>Select your Remittance Excel file to download Sage 50 CSV</p>
     
-    <div class="upload-box">
-        <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M11 16V7.85l-2.6 2.6L7 9l5-5 5 5-1.4 1.45-2.6-2.6V16h-2Zm-7 4q-.825 0-1.412-.587Q2 18.825 2 18v-3h2v3h16v-3h2v3q0 .825-.587 1.413Q20.825 20 20 20H4Z"/>
-        </svg>
-        <span class="file-label" id="fileText">Click or Drag & Drop File Here</span>
-        <span class="file-sub">Supports .XLSX, .XLS files</span>
-        <div class="file-info" id="fileName"></div>
-        <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="showFileName()" />
+    <div class="file-input-wrapper">
+        <label for="excelFile">Choose Remittance Excel File:</label>
+        <input type="file" id="excelFile" accept=".xlsx, .xls">
     </div>
 
     <button class="btn" onclick="processExcel()">Convert & Download CSV</button>
@@ -181,23 +43,16 @@
 </div>
 
 <script>
-function showFileName() {
-    const fileInput = document.getElementById('excelFile');
-    const fileNameDiv = document.getElementById('fileName');
-    const fileText = document.getElementById('fileText');
-    
-    if (fileInput.files.length > 0) {
-        fileNameDiv.innerText = "Selected: " + fileInput.files[0].name;
-        fileText.innerText = "File Selected!";
-    }
-}
-
 function processExcel() {
     const fileInput = document.getElementById('excelFile');
     const status = document.getElementById('status');
     
+    status.className = "";
+    status.style.display = "none";
+
     if (!fileInput.files.length) {
-        alert("Pehle Remittance Excel File select karein!");
+        status.className = "error";
+        status.innerText = "Pehle 'Choose File' par click karke Excel File select karein!";
         return;
     }
 
@@ -205,50 +60,63 @@ function processExcel() {
     const reader = new FileReader();
 
     reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        let csvRows = [];
-        csvRows.push(["Type", "Account Ref", "Nominal Code", "Date", "Reference", "Ex Ref", "Net Amount", "Tax Code"]);
-
-        jsonData.forEach(row => {
-            let accountRef = row['Sage Code'] || row['SUID'] || '';
-            let bankDate = row['Bank date'] || '';
-            let ref = row['Reference'] || '';
-            let invNo = row['invoice number'] || '';
-            let period = row['Invoice Period'] || '';
-            let exRef = Inv:${invNo} P:${period};
-
-            let invAmt = parseFloat(row['Invoice Amount']) || 0;
-            let recAmt = parseFloat(row['Amount']) || 0;
-
-            let bankCode = '1200';
-            let taxCode = 'T9';
-
-            if (recAmt <= invAmt) {
-                csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, recAmt.toFixed(2), taxCode]);
-            } else {
-                csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, invAmt.toFixed(2), taxCode]);
-                let poaAmt = recAmt - invAmt;
-                csvRows.push(["SA", accountRef, bankCode, bankDate, ref, ${exRef} - POA, poaAmt.toFixed(2), taxCode]);
+            if (!jsonData || jsonData.length === 0) {
+                status.className = "error";
+                status.innerText = "Excel file khaali hai ya format sahi nahi hai.";
+                return;
             }
-        });
 
-        let csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
-        let encodedUri = encodeURI(csvContent);
-        
-        let link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "Sage50_Income_Import.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            let csvRows = [];
+            // Sage 50 CSV Header
+            csvRows.push(["Type", "Account Ref", "Nominal Code", "Date", "Reference", "Ex Ref", "Net Amount", "Tax Code"]);
 
-        status.className = "status-success";
-        status.innerText = "✓ Conversion Successful! File downloaded.";
+            jsonData.forEach(row => {
+                let accountRef = row['Sage Code'] || row['SU ID'] || row['SUID'] || '';
+                let bankDate = row['Bank Date'] || row['Bank date'] || '';
+                let ref = row['Reference'] || '';
+                let period = row['Ex Period'] || row['Invoice Period'] || '';
+                let invNo = row['invoice number'] || row['Invoice Number'] || '';
+                
+                let exRef = invNo ? `Inv:${invNo} P:${period}` : `Period:${period}`;
+
+                let invAmt = parseFloat(row['Invoice Amount']) || 0;
+                let recAmt = parseFloat(row['Amount']) || 0;
+
+                let bankCode = '1200';
+                let taxCode = 'T9';
+
+                if (invAmt > 0 && recAmt > invAmt) {
+                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, invAmt.toFixed(2), taxCode]);
+                    let poaAmt = recAmt - invAmt;
+                    csvRows.push(["SA", accountRef, bankCode, bankDate, ref, `${exRef} - POA`, poaAmt.toFixed(2), taxCode]);
+                } else {
+                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, recAmt.toFixed(2), taxCode]);
+                }
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
+            let encodedUri = encodeURI(csvContent);
+            
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Sage50_Income_Import.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            status.className = "success";
+            status.innerText = "✓ Success! Sage50_Income_Import.csv downloaded.";
+        } catch (err) {
+            status.className = "error";
+            status.innerText = "Error: " + err.message;
+        }
     };
 
     reader.readAsArrayBuffer(file);
