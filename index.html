@@ -4,32 +4,194 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sage 50 Remittance Converter</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- SheetJS Library -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
     <style>
-        body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 40px; text-align: center; }
-        .card { background: white; max-width: 500px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #1e293b; margin-bottom: 10px; }
-        p { color: #64748b; font-size: 14px; }
-        input[type="file"] { margin: 25px 0; display: block; width: 100%; }
-        button { background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
-        button:hover { background: #1d4ed8; }
-        #status { margin-top: 20px; color: #059669; font-weight: bold; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 520px;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .badge {
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            color: #0f172a;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .upload-box {
+            border: 2px dashed #cbd5e1;
+            background: #f8fafc;
+            padding: 30px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .upload-box:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            fill: #3b82f6;
+        }
+
+        .file-label {
+            display: block;
+            color: #334155;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .file-sub {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            display: block !important;
+        }
+
+        .file-info {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #2563eb;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Sage 50 Remittance Converter</h2>
-    <p>Upload Excel file to generate Sage 50 CSV (Auto-Split SR & SA)</p>
+<div class="container">
+    <span class="badge">Sage 50 Automation</span>
+    <h2>Remittance Converter</h2>
+    <p class="subtitle">Upload Excel file to auto-generate Audit Trail CSV with SR & SA Split</p>
     
-    <input type="file" id="excelFile" accept=".xlsx, .xls" />
-    <button onclick="processExcel()">Convert & Download Sage CSV</button>
+    <div class="upload-box">
+        <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M11 16V7.85l-2.6 2.6L7 9l5-5 5 5-1.4 1.45-2.6-2.6V16h-2Zm-7 4q-.825 0-1.412-.587Q2 18.825 2 18v-3h2v3h16v-3h2v3q0 .825-.587 1.413Q20.825 20 20 20H4Z"/>
+        </svg>
+        <span class="file-label" id="fileText">Click or Drag & Drop File Here</span>
+        <span class="file-sub">Supports .XLSX, .XLS files</span>
+        <div class="file-info" id="fileName"></div>
+        <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="showFileName()" />
+    </div>
+
+    <button class="btn" onclick="processExcel()">Convert & Download CSV</button>
     
     <div id="status"></div>
 </div>
 
 <script>
+function showFileName() {
+    const fileInput = document.getElementById('excelFile');
+    const fileNameDiv = document.getElementById('fileName');
+    const fileText = document.getElementById('fileText');
+    
+    if (fileInput.files.length > 0) {
+        fileNameDiv.innerText = "Selected: " + fileInput.files[0].name;
+        fileText.innerText = "File Selected!";
+    }
+}
+
 function processExcel() {
     const fileInput = document.getElementById('excelFile');
     const status = document.getElementById('status');
@@ -50,7 +212,6 @@ function processExcel() {
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
         let csvRows = [];
-        // Sage 50 Header
         csvRows.push(["Type", "Account Ref", "Nominal Code", "Date", "Reference", "Ex Ref", "Net Amount", "Tax Code"]);
 
         jsonData.forEach(row => {
@@ -64,29 +225,21 @@ function processExcel() {
             let invAmt = parseFloat(row['Invoice Amount']) || 0;
             let recAmt = parseFloat(row['Amount']) || 0;
 
-            let bankCode = '1200'; // Default Sage Bank Nominal Code
-            let taxCode = 'T9';   // Non-VAT tax code
+            let bankCode = '1200';
+            let taxCode = 'T9';
 
-            // Case 1: Exact Match or Partial Payment
             if (recAmt <= invAmt) {
                 csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, recAmt.toFixed(2), taxCode]);
-            } 
-            // Case 2: Overpayment (Splits into SR and SA)
-            else {
-                // 1. Full Invoice Amount cleared as SR (500)
+            } else {
                 csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, invAmt.toFixed(2), taxCode]);
-                
-                // 2. Extra Amount booked as Payment On Account / SA (300)
                 let poaAmt = recAmt - invAmt;
                 csvRows.push(["SA", accountRef, bankCode, bankDate, ref, ${exRef} - POA, poaAmt.toFixed(2), taxCode]);
             }
         });
 
-        // Convert array to CSV
         let csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
         let encodedUri = encodeURI(csvContent);
         
-        // Auto Download
         let link = document.createElement("a");
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", "Sage50_Income_Import.csv");
@@ -94,7 +247,8 @@ function processExcel() {
         link.click();
         document.body.removeChild(link);
 
-        status.innerText = "Success! Sage50_Income_Import.csv file downloaded.";
+        status.className = "status-success";
+        status.innerText = "✓ Conversion Successful! File downloaded.";
     };
 
     reader.readAsArrayBuffer(file);
