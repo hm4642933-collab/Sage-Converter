@@ -6,39 +6,22 @@
     <title>Sage 50 Remittance Converter</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: #0f172a; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .container { background: #ffffff; width: 100%; max-width: 500px; padding: 35px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h2 { color: #0f172a; margin-bottom: 8px; font-size: 22px; }
-        p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
-        
-        .file-input-wrapper { margin-bottom: 20px; text-align: left; }
-        label { display: block; font-weight: 600; color: #334155; margin-bottom: 8px; font-size: 14px; }
-        input[type="file"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; background: #f8fafc; font-size: 14px; cursor: pointer; }
-        
-        .btn { background: #2563eb; color: #ffffff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn:hover { background: #1d4ed8; }
-        
-        #status { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; display: none; }
-        .success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; display: block !important; }
-        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; display: block !important; }
+        .container { background: #ffffff; width: 100%; max-width: 480px; padding: 30px; border-radius: 12px; text-align: center; }
+        h2 { color: #0f172a; margin-bottom: 10px; }
+        input[type="file"] { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #cbd5e1; border-radius: 6px; }
+        .btn { background: #2563eb; color: #fff; border: none; width: 100%; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        #status { margin-top: 15px; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Sage 50 Remittance Converter</h2>
-    <p>Select your Remittance Excel file to download Sage 50 CSV</p>
-    
-    <div class="file-input-wrapper">
-        <label for="excelFile">Choose Remittance Excel File:</label>
-        <input type="file" id="excelFile" accept=".xlsx, .xls">
-    </div>
-
+    <h2>Sage 50 Import Converter</h2>
+    <input type="file" id="excelFile" accept=".xlsx, .xls">
     <button class="btn" onclick="processExcel()">Convert & Download CSV</button>
-    
     <div id="status"></div>
 </div>
 
@@ -47,103 +30,46 @@ function processExcel() {
     const fileInput = document.getElementById('excelFile');
     const status = document.getElementById('status');
     
-    status.className = "";
-    status.style.display = "none";
-
     if (!fileInput.files.length) {
-        status.className = "error";
-        status.innerText = "Pehle 'Choose File' par click karke Excel File select karein!";
+        alert("Pehle Excel file select karein!");
         return;
     }
 
-    const file = fileInput.files[0];
     const reader = new FileReader();
-
     reader.onload = function(e) {
         try {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-            if (!jsonData || jsonData.length === 0) {
-                status.className = "error";
-                status.innerText = "Excel file khaali hai ya format sahi nahi hai.";
-                return;
-            }
-
-            let csvLines = [];
-            
-            // Header Row
-            csvLines.push([
-                "Type", 
-                "Account Reference", 
-                "Nominal A/C Ref", 
-                "Department Code", 
-                "Date", 
-                "Reference", 
-                "Details", 
-                "Net Amount", 
-                "Tax Code", 
-                "Tax Amount"
-            ].map(val => `"${val}"`).join(","));
+            let rows = [["Type", "Account Ref", "Nominal Code", "Dept Code", "Date", "Ref", "Details", "Net Amount", "Tax Code", "Tax Amount"]];
 
             jsonData.forEach(row => {
-                let accountRef = (row['Sage Code'] || row['SU ID'] || row['SUID'] || '').toString().trim();
-                let bankDate = (row['Bank Date'] || row['Bank date'] || '').toString().trim();
-                let ref = (row['Reference'] || '').toString().trim();
-                let period = (row['Ex Period'] || row['Invoice Period'] || '').toString().trim();
-                let invNo = (row['invoice number'] || row['Invoice Number'] || '').toString().trim();
-                
-                let details = invNo ? `Inv:${invNo} P:${period}` : `Remittance P:${period}`;
+                let acc = row['Sage Code'] || row['SU ID'] || '';
+                let dt = row['Bank Date'] || '';
+                let ref = row['Reference'] || '';
+                let period = row['Ex Period'] || '';
+                let amt = parseFloat(row['Amount']) || 0;
 
-                let invAmt = parseFloat(row['Invoice Amount']) || 0;
-                let recAmt = parseFloat(row['Amount']) || 0;
-
-                let bankCode = '1200';
-                let deptCode = '0';
-                let taxCode = 'T9';
-                let taxAmt = '0.00';
-
-                function formatRow(type, acc, nom, dept, dt, reference, det, amt, taxC, taxA) {
-                    return [type, acc, nom, dept, dt, reference, det, amt, taxC, taxA]
-                        .map(item => `"${String(item).replace(/"/g, '""')}"`)
-                        .join(",");
-                }
-
-                if (invAmt > 0 && recAmt > invAmt) {
-                    csvLines.push(formatRow("SR", accountRef, bankCode, deptCode, bankDate, ref, details, invAmt.toFixed(2), taxCode, taxAmt));
-                    let poaAmt = recAmt - invAmt;
-                    csvLines.push(formatRow("SA", accountRef, bankCode, deptCode, bankDate, ref, `${details} - POA`, poaAmt.toFixed(2), taxCode, taxAmt));
-                } else {
-                    csvLines.push(formatRow("SR", accountRef, bankCode, deptCode, bankDate, ref, details, recAmt.toFixed(2), taxCode, taxAmt));
-                }
+                rows.push(["SR", acc, "1200", "0", dt, ref, `Period:${period}`, amt.toFixed(2), "T9", "0.00"]);
             });
 
-            // Windows standard CRLF (\r\n) line breaks
-            let csvString = csvLines.join("\r\n");
+            let csvString = rows.map(r => r.join(",")).join("\r\n");
+            let blob = new Blob([csvString], { type: 'text/csv' });
+            let a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'Sage_Import.csv';
+            a.click();
 
-            // Standard Blob for clean Windows CSV download
-            let blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            let link = document.createElement("a");
-            let url = URL.createObjectURL(blob);
-            
-            link.setAttribute("href", url);
-            link.setAttribute("download", "Sage50_Income_Import.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            status.className = "success";
-            status.innerText = "✓ Success! Perfect Windows-compatible CSV downloaded.";
-        } catch (err) {
-            status.className = "error";
+            status.style.color = "green";
+            status.innerText = "✓ CSV Ready! Sage 50 mein import karein.";
+        } catch(err) {
+            status.style.color = "red";
             status.innerText = "Error: " + err.message;
         }
     };
-
-    reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(fileInput.files[0]);
 }
 </script>
 
