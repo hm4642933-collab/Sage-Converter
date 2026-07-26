@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sage 50 Remittance Converter</title>
+    <!-- SheetJS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 40px; text-align: center; }
+        .card { background: white; max-width: 500px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #1e293b; margin-bottom: 10px; }
+        p { color: #64748b; font-size: 14px; }
+        input[type="file"] { margin: 25px 0; display: block; width: 100%; }
+        button { background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+        button:hover { background: #1d4ed8; }
+        #status { margin-top: 20px; color: #059669; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Sage 50 Remittance Converter</h2>
+    <p>Upload Excel file to generate Sage 50 CSV (Auto-Split SR & SA)</p>
+    
+    <input type="file" id="excelFile" accept=".xlsx, .xls" />
+    <button onclick="processExcel()">Convert & Download Sage CSV</button>
+    
+    <div id="status"></div>
+</div>
+
+<script>
+function processExcel() {
+    const fileInput = document.getElementById('excelFile');
+    const status = document.getElementById('status');
+    
+    if (!fileInput.files.length) {
+        alert("Pehle Remittance Excel File select karein!");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        let csvRows = [];
+        // Sage 50 Header
+        csvRows.push(["Type", "Account Ref", "Nominal Code", "Date", "Reference", "Ex Ref", "Net Amount", "Tax Code"]);
+
+        jsonData.forEach(row => {
+            let accountRef = row['Sage Code'] || row['SUID'] || '';
+            let bankDate = row['Bank date'] || '';
+            let ref = row['Reference'] || '';
+            let invNo = row['invoice number'] || '';
+            let period = row['Invoice Period'] || '';
+            let exRef = Inv:${invNo} P:${period};
+
+            let invAmt = parseFloat(row['Invoice Amount']) || 0;
+            let recAmt = parseFloat(row['Amount']) || 0;
+
+            let bankCode = '1200'; // Default Sage Bank Nominal Code
+            let taxCode = 'T9';   // Non-VAT tax code
+
+            // Case 1: Exact Match or Partial Payment
+            if (recAmt <= invAmt) {
+                csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, recAmt.toFixed(2), taxCode]);
+            } 
+            // Case 2: Overpayment (Splits into SR and SA)
+            else {
+                // 1. Full Invoice Amount cleared as SR (500)
+                csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, invAmt.toFixed(2), taxCode]);
+                
+                // 2. Extra Amount booked as Payment On Account / SA (300)
+                let poaAmt = recAmt - invAmt;
+                csvRows.push(["SA", accountRef, bankCode, bankDate, ref, ${exRef} - POA, poaAmt.toFixed(2), taxCode]);
+            }
+        });
+
+        // Convert array to CSV
+        let csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
+        let encodedUri = encodeURI(csvContent);
+        
+        // Auto Download
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "Sage50_Income_Import.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        status.innerText = "Success! Sage50_Income_Import.csv file downloaded.";
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+</script>
+
+</body>
+</html>
