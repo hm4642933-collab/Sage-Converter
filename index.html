@@ -74,11 +74,12 @@ function processExcel() {
             }
 
             let csvRows = [];
-            // Exact Sage 50 Audit Trail Import Column Headers
+            // Exact 10 Column Headers to match Sage 50 Transaction v2021.map
             csvRows.push([
                 "Type", 
                 "Account Reference", 
-                "Nominal Account Number", 
+                "Nominal A/C Ref", 
+                "Department Code",
                 "Date", 
                 "Reference", 
                 "Details", 
@@ -100,15 +101,16 @@ function processExcel() {
                 let recAmt = parseFloat(row['Amount']) || 0;
 
                 let bankCode = '1200';
+                let deptCode = '0';
                 let taxCode = 'T9';
                 let taxAmt = '0.00';
 
                 if (invAmt > 0 && recAmt > invAmt) {
-                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, details, invAmt.toFixed(2), taxCode, taxAmt]);
+                    csvRows.push(["SR", accountRef, bankCode, deptCode, bankDate, ref, details, invAmt.toFixed(2), taxCode, taxAmt]);
                     let poaAmt = recAmt - invAmt;
-                    csvRows.push(["SA", accountRef, bankCode, bankDate, ref, `${details} - POA`, poaAmt.toFixed(2), taxCode, taxAmt]);
+                    csvRows.push(["SA", accountRef, bankCode, deptCode, bankDate, ref, `${details} - POA`, poaAmt.toFixed(2), taxCode, taxAmt]);
                 } else {
-                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, details, recAmt.toFixed(2), taxCode, taxAmt]);
+                    csvRows.push(["SR", accountRef, bankCode, deptCode, bankDate, ref, details, recAmt.toFixed(2), taxCode, taxAmt]);
                 }
             });
 
@@ -123,7 +125,7 @@ function processExcel() {
             document.body.removeChild(link);
 
             status.className = "success";
-            status.innerText = "✓ Success! New Sage50_Income_Import.csv downloaded.";
+            status.innerText = "✓ Success! Perfect Sage 50 CSV Downloaded.";
         } catch (err) {
             status.className = "error";
             status.innerText = "Error: " + err.message;
