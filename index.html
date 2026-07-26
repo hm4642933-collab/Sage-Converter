@@ -74,8 +74,18 @@ function processExcel() {
             }
 
             let csvRows = [];
-            // Sage 50 CSV Header
-            csvRows.push(["Type", "Account Ref", "Nominal Code", "Date", "Reference", "Ex Ref", "Net Amount", "Tax Code"]);
+            // Exact Sage 50 Audit Trail Import Column Headers
+            csvRows.push([
+                "Type", 
+                "Account Reference", 
+                "Nominal Account Number", 
+                "Date", 
+                "Reference", 
+                "Details", 
+                "Net Amount", 
+                "Tax Code", 
+                "Tax Amount"
+            ]);
 
             jsonData.forEach(row => {
                 let accountRef = row['Sage Code'] || row['SU ID'] || row['SUID'] || '';
@@ -84,20 +94,21 @@ function processExcel() {
                 let period = row['Ex Period'] || row['Invoice Period'] || '';
                 let invNo = row['invoice number'] || row['Invoice Number'] || '';
                 
-                let exRef = invNo ? `Inv:${invNo} P:${period}` : `Period:${period}`;
+                let details = invNo ? `Inv:${invNo} P:${period}` : `Remittance P:${period}`;
 
                 let invAmt = parseFloat(row['Invoice Amount']) || 0;
                 let recAmt = parseFloat(row['Amount']) || 0;
 
                 let bankCode = '1200';
                 let taxCode = 'T9';
+                let taxAmt = '0.00';
 
                 if (invAmt > 0 && recAmt > invAmt) {
-                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, invAmt.toFixed(2), taxCode]);
+                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, details, invAmt.toFixed(2), taxCode, taxAmt]);
                     let poaAmt = recAmt - invAmt;
-                    csvRows.push(["SA", accountRef, bankCode, bankDate, ref, `${exRef} - POA`, poaAmt.toFixed(2), taxCode]);
+                    csvRows.push(["SA", accountRef, bankCode, bankDate, ref, `${details} - POA`, poaAmt.toFixed(2), taxCode, taxAmt]);
                 } else {
-                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, exRef, recAmt.toFixed(2), taxCode]);
+                    csvRows.push(["SR", accountRef, bankCode, bankDate, ref, details, recAmt.toFixed(2), taxCode, taxAmt]);
                 }
             });
 
@@ -112,7 +123,7 @@ function processExcel() {
             document.body.removeChild(link);
 
             status.className = "success";
-            status.innerText = "✓ Success! Sage50_Income_Import.csv downloaded.";
+            status.innerText = "✓ Success! New Sage50_Income_Import.csv downloaded.";
         } catch (err) {
             status.className = "error";
             status.innerText = "Error: " + err.message;
